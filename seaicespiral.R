@@ -13,12 +13,12 @@ monthdeg <- c(0,30,60,90,120,150,180,210,240,270,300,330)
 
 png(filename = "ice%03d.png", width = 800, height = 800, units = "px") 
 
-for (i in 12108:(dim(icevolume)[1])) {
+for (i in 1:(dim(icevolume)[1])) {
  if (i %% 3 != 0) {
   } else {
 
     year <- icevolume$year[i]
-  	par(cex=2,cex.axis=1.2,cex.lab=1.2, cex.main=1.2)
+    par(cex=2,cex.axis=1.2,cex.lab=1.2, cex.main=1.2)
     polar.plot(0, 0, clockwise=T, start=-20, rp.type="s", point.symbols='.', point.col='blue', radial.lim=c(0,5,15,25,35),radial.labels=c(NA,5,15,25,35),labels=monthlabel,label.pos=monthdeg,show.radial.grid=F, mar=c(4,2,4.5,3))
 
     rasterImage(img,-35,-35,35,35)
