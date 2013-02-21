@@ -6,7 +6,10 @@ icevolume <- read.table("seaicevolume.dat.csv",head=T)
 icedeg <- icevolume$day/365*360
 icevolume <- cbind(icevolume,icedeg)
 
-img<-readPNG("arctic-ocean-trans2_800px.png")
+
+#download up-to-date Arctic bathymetry from IBCAO: http://www.ngdc.noaa.gov/mgg/bathymetry/arctic/downloads.html
+#or use my resized, transparent image: http://reric.org/files/ibcao.png
+img<-readPNG("ibcao.png")
 
 monthlabel <- c("January","February","March","April","May","June","July","August","September","October","November","December")
 monthdeg <- c(0,30,60,90,120,150,180,210,240,270,300,330)
