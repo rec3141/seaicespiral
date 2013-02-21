@@ -1,4 +1,5 @@
 SEA ICE SPIRAL ANIMATION
+watch it here: https://www.youtube.com/watch?v=qUO23Y179pU
 
 I made this movie to visually demonstrate the dramatic decrease in Arctic sea ice happening *right now*. When I was born, in 1979, the minimum summer sea ice extent in the Arctic was about 17,000 cubic kilometers. In 2013, it was less than 5,000 cubic kilometers.
 
