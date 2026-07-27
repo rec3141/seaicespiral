@@ -11,6 +11,8 @@ https://psc.apl.uw.edu/research/projects/arctic-sea-ice-volume-anomaly/
 Background image: IBCAO bathymetry (resized/transparent copy from reric.org).
 """
 
+import os
+
 import numpy as np
 import matplotlib
 
@@ -66,7 +68,7 @@ fig.patch.set_facecolor(SURFACE)
 
 # square rect for the spiral, centered; height_frac = width_frac * 1080/1920
 w = 0.84
-rect = [(1 - w) / 2, 0.315, w, w * 9 / 16]
+rect = [(1 - w) / 2, 0.37, w, w * 9 / 16]
 
 bg = fig.add_axes(rect)
 bg.imshow(plt.imread("ibcao.png"))
@@ -145,14 +147,18 @@ def draw(frame):
     return trail, head, tline, tdot, year_txt, stat_txt
 
 
+# render to a temp file, then swap into place: the mp4 index (moov atom) is
+# only written on finalize, so the target path always stays playable
 anim = FuncAnimation(fig, draw, frames=total_frames, blit=False)
 anim.save(
-    "seaicespiral_tiktok.mp4",
+    "seaicespiral_render.mp4",
     writer=FFMpegWriter(fps=FPS, codec="h264",
-                        extra_args=["-pix_fmt", "yuv420p", "-crf", "20"]),
+                        extra_args=["-pix_fmt", "yuv420p", "-crf", "20",
+                                    "-movflags", "+faststart"]),
     progress_callback=lambda f, tot: (
         print(f"frame {f}/{tot}", flush=True) if f % 100 == 0 else None),
 )
+os.replace("seaicespiral_render.mp4", "seaicespiral_tiktok.mp4")
 
 # ---------------------------------------------------------------- final still
 draw(total_frames - 1)
