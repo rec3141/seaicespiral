@@ -17,6 +17,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation, FFMpegWriter
+from matplotlib.collections import LineCollection
 from matplotlib.colors import LinearSegmentedColormap
 
 # ---------------------------------------------------------------- data
@@ -33,12 +34,22 @@ pct_drop = 100 * (1 - recent_min / first_min)
 
 # ---------------------------------------------------------------- style
 SURFACE = "#0a1420"
-TRAIL_CMAP = LinearSegmentedColormap.from_list("trail", ["#2a6da6", "#6fbef5"])
+# year color sweeps the spectrum, cold blue (1979) -> hot red (now)
+TRAIL_CMAP = LinearSegmentedColormap.from_list(
+    "trail", ["#3a7bd5", "#2fb3c9", "#45b856", "#e8c33a", "#f28c2e", "#e84a38"])
 HEAD = "#E84A38"
 INK, INK_MUTED = "#f2f6fa", "#8fa3b5"
 HEAD_LEN = 10  # trailing days drawn as the red "now" head
 
 trail_colors = TRAIL_CMAP((years - years[0]) / (years[-1] - years[0]))
+
+# trail line segments, colored by year; subsampled every 3rd day (chords are
+# indistinguishable from daily at 1080 px but render ~3x faster)
+SUB = 3
+sub_idx = np.arange(0, n, SUB)
+pts = np.column_stack([theta, vol])[sub_idx]
+segments = np.stack([pts[:-1], pts[1:]], axis=1)
+seg_colors = trail_colors[sub_idx[:-1]]
 
 FPS = 30
 STEP = 27  # days of data revealed per frame  -> ~21 s of growth
@@ -76,7 +87,8 @@ ax.tick_params(pad=6)
 ax.grid(color="white", alpha=0.12, linewidth=0.8)
 ax.spines.clear()
 
-trail = ax.scatter([], [], s=7, linewidths=0, zorder=3)
+trail = LineCollection([], linewidths=1.3, capstyle="round", zorder=3)
+ax.add_collection(trail)
 head = ax.scatter([], [], s=[], c=HEAD, edgecolors="white",
                   linewidths=0.6, zorder=4)
 
@@ -98,12 +110,14 @@ fig.text(0.5, 0.022,
 
 def draw(frame):
     i = min((frame + 1) * STEP, n)
-    trail.set_offsets(np.column_stack([theta[:i], vol[:i]]))
-    trail.set_facecolors(trail_colors[:i])
+    j = max(0, np.searchsorted(sub_idx, i) - 1)
+    trail.set_segments(segments[:j])
+    trail.set_color(seg_colors[:j])
     h0 = max(0, i - HEAD_LEN)
     head.set_offsets(np.column_stack([theta[h0:i], vol[h0:i]]))
     head.set_sizes(np.linspace(15, 70, i - h0))
     year_txt.set_text(str(years[i - 1]))
+    year_txt.set_color(trail_colors[i - 1])
     vol_txt.set_text(f"{vol[i - 1] * 1000:,.0f} km³ of sea ice")
     if frame >= frames_grow:
         stat_txt.set_text(
@@ -116,6 +130,8 @@ anim.save(
     "seaicespiral_tiktok.mp4",
     writer=FFMpegWriter(fps=FPS, codec="h264",
                         extra_args=["-pix_fmt", "yuv420p", "-crf", "20"]),
+    progress_callback=lambda f, tot: (
+        print(f"frame {f}/{tot}", flush=True) if f % 100 == 0 else None),
 )
 
 # ---------------------------------------------------------------- final still
