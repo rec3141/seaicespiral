@@ -1,6 +1,14 @@
 SEA ICE SPIRAL ANIMATION
 watch it here: https://www.youtube.com/watch?v=qUO23Y179pU
 
+UPDATE (July 2026): Data refreshed with the latest PIOMAS daily ice volume
+series (1979 through February 2026). A Python port of the original R script,
+seaicespiral.py, renders a short-form vertical video (1080x1920, ~24 s,
+seaicespiral_tiktok.mp4) plus a final-frame still (seaicespiral.png).
+Requires numpy, matplotlib, and ffmpeg; run with: python3 seaicespiral.py
+Fresh data: https://psc.apl.uw.edu/wordpress/wp-content/uploads/schweiger/ice_volume/PIOMAS.vol.daily.1979.2026.Current.v2.1.dat.gz
+The original R script (seaicespiral.R) is kept unchanged for reference.
+
 I made this movie to visually demonstrate the dramatic decrease in Arctic sea ice happening *right now*. When I was born, in 1979, the minimum summer sea ice extent in the Arctic was about 17,000 cubic kilometers. In 2013, it was less than 5,000 cubic kilometers.
 
 The red points show weekly estimates of sea ice volume in the Arctic through time, from 1979 to today. The scale is from 0 to 35,000 cubic kilometers. There is a seasonal expansion of the ice during winter and a contraction during the summer. There is no evidence for a sea-ice free summer in the past 700,000 years of Earth history. The next one is predicted to take place in the next 5-30 years. http://onlinelibrary.wiley.com/doi/10.1029/2005EO340001/abstract
