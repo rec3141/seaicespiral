@@ -25,6 +25,7 @@ data = np.loadtxt("seaicevolume.dat.csv", skiprows=1)
 years, days, vol = data[:, 0].astype(int), data[:, 1].astype(int), data[:, 2]
 n = len(vol)
 theta = (days - 1) / 365.0 * 2 * np.pi  # Jan 1 at 0, clockwise via axes setup
+xtime = years + (days - 1) / 365.25  # decimal year for the timeline panel
 
 # annual September minima for the end-card stat
 first_min = vol[years == years[0]].min()
@@ -50,6 +51,8 @@ sub_idx = np.arange(0, n, SUB)
 pts = np.column_stack([theta, vol])[sub_idx]
 segments = np.stack([pts[:-1], pts[1:]], axis=1)
 seg_colors = trail_colors[sub_idx[:-1]]
+tpts = np.column_stack([xtime, vol])[sub_idx]
+tsegments = np.stack([tpts[:-1], tpts[1:]], axis=1)
 
 FPS = 30
 STEP = 27  # days of data revealed per frame  -> ~21 s of growth
@@ -92,6 +95,22 @@ ax.add_collection(trail)
 head = ax.scatter([], [], s=[], c=HEAD, edgecolors="white",
                   linewidths=0.6, zorder=4)
 
+# timeline panel: volume vs time, same year-color gradient
+tax = fig.add_axes([0.14, 0.08, 0.78, 0.115])
+tax.set_facecolor("none")
+tax.set_xlim(years[0], years[-1] + 0.5)
+tax.set_ylim(0, 35)
+tax.set_xticks([1980, 1990, 2000, 2010, 2020])
+tax.set_yticks([0, 15, 30])
+tax.tick_params(colors=INK_MUTED, labelsize=10, length=0)
+for spine in tax.spines.values():
+    spine.set_visible(False)
+tax.grid(axis="y", color="white", alpha=0.1, linewidth=0.8)
+tax.set_ylabel("1000 km³", color=INK_MUTED, fontsize=9)
+tline = LineCollection([], linewidths=1.6, capstyle="round")
+tax.add_collection(tline)
+(tdot,) = tax.plot([], [], "o", ms=6, color=HEAD, mec="white", mew=0.6)
+
 fig.text(0.5, 0.955, "ARCTIC SEA ICE", ha="center", color=INK,
          fontsize=34, fontweight="bold")
 fig.text(0.5, 0.928, f"volume in 1000 km³ · PIOMAS · "
@@ -99,9 +118,8 @@ fig.text(0.5, 0.928, f"volume in 1000 km³ · PIOMAS · "
          fontsize=15)
 year_txt = fig.text(0.5, 0.235, "", ha="center", color=INK,
                     fontsize=64, fontweight="bold")
-vol_txt = fig.text(0.5, 0.20, "", ha="center", color=INK_MUTED, fontsize=18)
-stat_txt = fig.text(0.5, 0.14, "", ha="center", color=HEAD,
-                    fontsize=22, fontweight="bold")
+stat_txt = fig.text(0.5, 0.203, "", ha="center", color=HEAD,
+                    fontsize=19, fontweight="bold")
 fig.text(0.5, 0.022,
          "Data: PIOMAS, Polar Science Center, University of Washington\n"
          "Original animation: R. Eric Collins · github.com/rec3141/seaicespiral",
@@ -118,11 +136,13 @@ def draw(frame):
     head.set_sizes(np.linspace(15, 70, i - h0))
     year_txt.set_text(str(years[i - 1]))
     year_txt.set_color(trail_colors[i - 1])
-    vol_txt.set_text(f"{vol[i - 1] * 1000:,.0f} km³ of sea ice")
+    tline.set_segments(tsegments[:j])
+    tline.set_color(seg_colors[:j])
+    tdot.set_data([xtime[i - 1]], [vol[i - 1]])
     if frame >= frames_grow:
         stat_txt.set_text(
             f"summer minimum down {pct_drop:.0f}% since {years[0]}")
-    return trail, head, year_txt, vol_txt, stat_txt
+    return trail, head, tline, tdot, year_txt, stat_txt
 
 
 anim = FuncAnimation(fig, draw, frames=total_frames, blit=False)
